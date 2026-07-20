@@ -7,7 +7,7 @@ $term = $_GET['term'] ?? '';
 $session = $_GET['session'] ?? '';
 
 if (!$student_id || !$term || !$session) {
-    header('Location: ../dashboard.php');
+    header('Location: /dashboard.php');
     exit;
 }
 
@@ -16,7 +16,7 @@ $stmt->execute([$student_id]);
 $student = $stmt->fetch();
 
 if (!$student) {
-    header('Location: ../dashboard.php');
+    header('Location: /dashboard.php');
     exit;
 }
 
@@ -88,7 +88,7 @@ require_once __DIR__ . '/../includes/header.php';
 
     <div class="text-center mt-20 no-print">
         <button id="print-btn" class="btn btn-info">Print Result</button>
-        <a href="../dashboard.php" class="btn" style="background:#e0e0e0;">Back to Dashboard</a>
+        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;">Back to Dashboard</a>
     </div>
 </div>
 

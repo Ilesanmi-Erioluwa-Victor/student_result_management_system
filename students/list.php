@@ -9,7 +9,7 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="table-container">
     <div class="table-header">
         <h2>Students</h2>
-        <a href="add.php" class="btn btn-success btn-sm">+ Add Student</a>
+        <a href="/students/add.php" class="btn btn-success btn-sm">+ Add Student</a>
     </div>
     <table>
         <thead>
@@ -33,8 +33,8 @@ require_once __DIR__ . '/../includes/header.php';
                 <td><?= htmlspecialchars($student['phone'] ?: '-') ?></td>
                 <td><?= htmlspecialchars($student['class']) ?></td>
                 <td class="actions">
-                    <a href="edit.php?id=<?= $student['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="delete.php?id=<?= $student['id'] ?>" class="btn btn-danger btn-sm delete-confirm">Delete</a>
+                    <a href="/students/edit.php?id=<?= $student['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="/students/delete.php?id=<?= $student['id'] ?>" class="btn btn-danger btn-sm delete-confirm">Delete</a>
                 </td>
             </tr>
             <?php endforeach; ?>

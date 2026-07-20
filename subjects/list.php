@@ -9,7 +9,7 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="table-container">
     <div class="table-header">
         <h2>Subjects</h2>
-        <a href="add.php" class="btn btn-success btn-sm">+ Add Subject</a>
+        <a href="/subjects/add.php" class="btn btn-success btn-sm">+ Add Subject</a>
     </div>
     <table>
         <thead>
@@ -27,7 +27,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <td><?= htmlspecialchars($subject['subject_name']) ?></td>
                 <td><?= htmlspecialchars($subject['class']) ?></td>
                 <td class="actions">
-                    <a href="add.php?delete=<?= $subject['id'] ?>" class="btn btn-danger btn-sm delete-confirm">Delete</a>
+                    <a href="/subjects/add.php?delete=<?= $subject['id'] ?>" class="btn btn-danger btn-sm delete-confirm">Delete</a>
                 </td>
             </tr>
             <?php endforeach; ?>

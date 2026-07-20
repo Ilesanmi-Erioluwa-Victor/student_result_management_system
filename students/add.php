@@ -73,7 +73,7 @@ require_once __DIR__ . '/../includes/header.php';
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Save Student</button>
-        <a href="list.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
+        <a href="/students/list.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
     </form>
 </div>
 

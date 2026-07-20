@@ -67,7 +67,7 @@ require_once 'includes/header.php';
         </div>
 
         <button type="submit" class="btn btn-primary">Save Settings</button>
-        <a href="dashboard.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Back</a>
+        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Back</a>
     </form>
 </div>
 

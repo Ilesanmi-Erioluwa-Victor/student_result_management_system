@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/functions.php';
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare('DELETE FROM subjects WHERE id = ?');
     $stmt->execute([$_GET['delete']]);
-    header('Location: list.php');
+    header('Location: /subjects/list.php');
     exit;
 }
 
@@ -64,7 +64,7 @@ require_once __DIR__ . '/../includes/header.php';
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Save Subject</button>
-        <a href="list.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
+        <a href="/subjects/list.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
     </form>
 </div>
 

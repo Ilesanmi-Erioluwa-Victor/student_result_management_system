@@ -18,24 +18,24 @@ require_once 'includes/header.php';
     <div class="stat-card">
         <h3><?= $studentCount ?></h3>
         <p>Total Students</p>
-        <a href="students/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">View Students</a>
+        <a href="/students/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">View Students</a>
     </div>
     <div class="stat-card">
         <h3><?= $subjectCount ?></h3>
         <p>Total Subjects</p>
-        <a href="subjects/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">View Subjects</a>
+        <a href="/subjects/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">View Subjects</a>
     </div>
     <div class="stat-card">
         <h3><?= $resultCount ?></h3>
         <p>Results Entered</p>
-        <a href="results/add.php" class="btn btn-info btn-sm" style="margin-top:10px;">Enter Results</a>
+        <a href="/results/add.php" class="btn btn-info btn-sm" style="margin-top:10px;">Enter Results</a>
     </div>
 </div>
 
 <div class="table-container" style="margin-top: 30px;">
     <div class="table-header">
         <h2>Recent Results</h2>
-        <a href="results/add.php" class="btn btn-success btn-sm">+ Add Result</a>
+        <a href="/results/add.php" class="btn btn-success btn-sm">+ Add Result</a>
     </div>
     <table>
         <thead>
@@ -68,11 +68,11 @@ require_once 'includes/header.php';
                 <td><?= htmlspecialchars($row['session']) ?></td>
                 <td><?= $row['total_score'] ?></td>
                 <td><strong><?= htmlspecialchars($row['grade']) ?></strong></td>
-                <td><a href="results/view.php?student_id=<?= urlencode($row['student_id']) ?>&term=<?= urlencode($row['term']) ?>&session=<?= urlencode($row['session']) ?>" class="btn btn-info btn-sm">View</a></td>
+                <td><a href="/results/view.php?student_id=<?= urlencode($row['student_id']) ?>&term=<?= urlencode($row['term']) ?>&session=<?= urlencode($row['session']) ?>" class="btn btn-info btn-sm">View</a></td>
             </tr>
             <?php endwhile; ?>
             <?php if ($stmt->rowCount() === 0): ?>
-            <tr><td colspan="7" style="text-align:center;color:#888;">No results found. Start by <a href="results/add.php">entering results</a>.</td></tr>
+            <tr><td colspan="7" style="text-align:center;color:#888;">No results found. Start by <a href="/results/add.php">entering results</a>.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

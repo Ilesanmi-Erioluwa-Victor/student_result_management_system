@@ -129,7 +129,7 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
 
         <button type="submit" class="btn btn-primary mt-20">Save Results</button>
-        <a href="../dashboard.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
+        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
     </form>
 </div>
 
