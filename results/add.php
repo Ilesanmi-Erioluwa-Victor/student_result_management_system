@@ -2,12 +2,10 @@
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-$message = '';
 $error = '';
 
 $students = $pdo->query('SELECT * FROM students ORDER BY last_name ASC')->fetchAll();
-$subjects = $pdo->query('SELECT * FROM subjects ORDER BY subject_name ASC')->fetchAll();
-$institutionType = getInstitutionType();
+$allSubjects = $pdo->query('SELECT * FROM subjects ORDER BY subject_name ASC')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = $_POST['student_id'];
@@ -19,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $successCount = 0;
 
         foreach ($entries as $entry) {
+            if (empty($entry['subject_code'])) continue;
             $subject_code = $entry['subject_code'];
             $ca_score = $entry['ca_score'] ?? 0;
             $exam_score = $entry['exam_score'] ?? 0;
@@ -40,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!$error) {
+        if (!$error && $successCount > 0) {
             header("Location: /results/view.php?student_id=" . urlencode($student_id) . "&term=" . urlencode($term) . "&session=" . urlencode($session));
             exit;
         }
@@ -63,7 +62,8 @@ require_once __DIR__ . '/../includes/header.php';
                 <select name="student_id" id="studentSelect" required>
                     <option value="">Select Student</option>
                     <?php foreach ($students as $s): ?>
-                    <option value="<?= htmlspecialchars($s['student_id']) ?>">
+                    <option value="<?= htmlspecialchars($s['student_id']) ?>"
+                            data-level="<?= htmlspecialchars($s['class']) ?>">
                         <?= htmlspecialchars($s['student_id'] . ' - ' . $s['last_name'] . ', ' . $s['first_name']) ?>
                     </option>
                     <?php endforeach; ?>
@@ -71,14 +71,14 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
             <div class="form-group">
                 <label>Level</label>
-                <input type="text" id="studentClass" readonly style="background:#f0f2f5;">
+                <input type="text" id="studentLevel" readonly style="background:#f0f2f5;">
             </div>
         </div>
         <div class="form-row">
             <div class="form-group">
-                <label>Semester / Term *</label>
-                <select name="term" required>
-                    <option value="">Select</option>
+                <label>Semester *</label>
+                <select name="term" id="semesterSelect" required>
+                    <option value="">Select Semester</option>
                     <option value="First Semester">First Semester</option>
                     <option value="Second Semester">Second Semester</option>
                 </select>
@@ -98,6 +98,7 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="table-container" style="margin-top:20px;">
             <div class="table-header">
                 <h3>Subject Scores</h3>
+                <span id="subjectCount" style="font-size:13px;color:#888;"></span>
             </div>
             <table id="scoresTable">
                 <thead>
@@ -109,8 +110,11 @@ require_once __DIR__ . '/../includes/header.php';
                     </tr>
                 </thead>
                 <tbody id="scoresBody">
-                    <?php foreach ($subjects as $subj): ?>
-                    <tr>
+                    <?php foreach ($allSubjects as $subj): ?>
+                    <tr class="subject-row"
+                        data-level="<?= htmlspecialchars($subj['class']) ?>"
+                        data-semester="<?= htmlspecialchars($subj['semester']) ?>"
+                        style="display:none;">
                         <td>
                             <?= htmlspecialchars($subj['subject_name']) ?>
                             <input type="hidden" name="entries[<?= $subj['id'] ?>][subject_code]" value="<?= htmlspecialchars($subj['subject_code']) ?>">
@@ -126,6 +130,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            <p id="noSubjectsMsg" style="display:none;text-align:center;padding:20px;color:#888;">No subjects found for this level and semester combination.</p>
         </div>
 
         <div class="form-actions">
@@ -136,20 +141,47 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-const students = <?= json_encode($students) ?>;
+const subjectRows = document.querySelectorAll('.subject-row');
 
-document.getElementById('studentSelect').addEventListener('change', function() {
-    const selected = students.find(s => s.student_id === this.value);
-    document.getElementById('studentClass').value = selected ? selected.class : '';
+function filterSubjects() {
+    const studentSelect = document.getElementById('studentSelect');
+    const semester = document.getElementById('semesterSelect').value;
+    const selectedOption = studentSelect.options[studentSelect.selectedIndex];
+    const level = selectedOption ? selectedOption.getAttribute('data-level') : '';
+    let visibleCount = 0;
+
+    subjectRows.forEach(function (row) {
+        const rowLevel = row.getAttribute('data-level');
+        const rowSemester = row.getAttribute('data-semester');
+        const levelMatch = rowLevel === 'All' || rowLevel === level;
+        const semesterMatch = rowSemester === semester;
+
+        if (level && semester && levelMatch && semesterMatch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    document.getElementById('subjectCount').textContent = visibleCount + ' subject(s)';
+    document.getElementById('noSubjectsMsg').style.display = visibleCount === 0 && level && semester ? '' : 'none';
+}
+
+document.getElementById('studentSelect').addEventListener('change', function () {
+    const selectedOption = this.options[this.selectedIndex];
+    document.getElementById('studentLevel').value = selectedOption ? selectedOption.getAttribute('data-level') : '';
+    filterSubjects();
 });
 
-document.querySelectorAll('.ca-score, .exam-score').forEach(function(input) {
-    input.addEventListener('input', function() {
+document.getElementById('semesterSelect').addEventListener('change', filterSubjects);
+
+document.querySelectorAll('.ca-score, .exam-score').forEach(function (input) {
+    input.addEventListener('input', function () {
         const row = this.closest('tr');
         const ca = parseFloat(row.querySelector('.ca-score').value) || 0;
         const exam = parseFloat(row.querySelector('.exam-score').value) || 0;
-        const total = ca + exam;
-        row.querySelector('.total-display').textContent = total.toFixed(2);
+        row.querySelector('.total-display').textContent = (ca + exam).toFixed(2);
     });
 });
 </script>

@@ -16,11 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $subject_code = strtoupper(trim($_POST['subject_code']));
     $subject_name = trim($_POST['subject_name']);
     $class = trim($_POST['class']);
+    $semester = trim($_POST['semester']);
 
-    if ($subject_code && $subject_name && $class) {
+    if ($subject_code && $subject_name && $class && $semester) {
         try {
-            $stmt = $pdo->prepare('INSERT INTO subjects (subject_code, subject_name, class) VALUES (?, ?, ?)');
-            $stmt->execute([$subject_code, $subject_name, $class]);
+            $stmt = $pdo->prepare('INSERT INTO subjects (subject_code, subject_name, class, semester) VALUES (?, ?, ?, ?)');
+            $stmt->execute([$subject_code, $subject_name, $class, $semester]);
             header('Location: /subjects/list.php');
             exit;
         } catch (PDOException $e) {
@@ -52,15 +53,25 @@ require_once __DIR__ . '/../includes/header.php';
                 <input type="text" name="subject_name" placeholder="e.g., Mathematics" required>
             </div>
         </div>
-        <div class="form-group">
-            <label>Level *</label>
-            <select name="class" required>
-                <option value="">Select Level</option>
-                <option value="All">All Levels</option>
-                <?php foreach ($levels as $level): ?>
-                <option value="<?= $level ?>"><?= $level ?></option>
-                <?php endforeach; ?>
-            </select>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Level *</label>
+                <select name="class" required>
+                    <option value="">Select Level</option>
+                    <option value="All">All Levels</option>
+                    <?php foreach ($levels as $level): ?>
+                    <option value="<?= $level ?>"><?= $level ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Semester *</label>
+                <select name="semester" required>
+                    <option value="">Select Semester</option>
+                    <option value="First Semester">First Semester</option>
+                    <option value="Second Semester">Second Semester</option>
+                </select>
+            </div>
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Subject</button>
