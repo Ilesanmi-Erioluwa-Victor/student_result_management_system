@@ -2,7 +2,6 @@
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
-$message = '';
 $error = '';
 
 $currentType = getInstitutionType();
@@ -17,9 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$institution_type]);
         $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE key = 'institution_name'");
         $stmt->execute([$institution_name]);
-        $currentType = $institution_type;
-        $currentName = $institution_name;
-        $message = 'Settings updated successfully.';
+        header('Location: /settings.php?saved=1');
+        exit;
     } else {
         $error = 'Please fill in all fields.';
     }
@@ -30,7 +28,9 @@ require_once 'includes/header.php';
 
 <div class="form-wrapper">
     <h2>System Settings</h2>
-    <?php if ($message): ?><div class="alert alert-success"><?= htmlspecialchars($message) ?></div><?php endif; ?>
+    <?php if (isset($_GET['saved'])): ?>
+    <div class="alert alert-success">Settings saved successfully.</div>
+    <?php endif; ?>
     <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <form method="POST">
         <div class="form-group">
@@ -66,8 +66,10 @@ require_once 'includes/header.php';
             <?php endif; ?>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save Settings</button>
-        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Back</a>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <a href="/dashboard.php" class="btn" style="background:#e0e0e0;color:#555;">Back</a>
+        </div>
     </form>
 </div>
 

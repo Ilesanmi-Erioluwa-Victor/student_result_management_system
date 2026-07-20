@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!$error) {
-            $message = "Results saved successfully for $successCount subject(s).";
+            header("Location: /results/view.php?student_id=" . urlencode($student_id) . "&term=" . urlencode($term) . "&session=" . urlencode($session));
+            exit;
         }
     } else {
         $error = 'Please add at least one subject score.';
@@ -53,7 +54,6 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="form-wrapper" style="max-width: 900px;">
     <h2>Enter Student Results</h2>
-    <?php if ($message): ?><div class="alert alert-success"><?= htmlspecialchars($message) ?></div><?php endif; ?>
     <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
     <form method="POST" id="resultForm">
@@ -128,8 +128,10 @@ require_once __DIR__ . '/../includes/header.php';
             </table>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-20">Save Results</button>
-        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Results</button>
+            <a href="/dashboard.php" class="btn" style="background:#e0e0e0;color:#555;">Cancel</a>
+        </div>
     </form>
 </div>
 

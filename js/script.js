@@ -25,4 +25,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 500);
         }, 5000);
     });
+
+    const forms = document.querySelectorAll('form');
+    forms.forEach(function (form) {
+        form.addEventListener('submit', function () {
+            const btns = this.querySelectorAll('button[type="submit"]');
+            btns.forEach(function (btn) {
+                btn.disabled = true;
+                btn.classList.add('loading');
+            });
+        });
+    });
 });

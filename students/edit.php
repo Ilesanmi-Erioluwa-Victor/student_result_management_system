@@ -12,7 +12,6 @@ if (!$student) {
     exit;
 }
 
-$message = '';
 $error = '';
 $levels = getLevels();
 
@@ -26,12 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($first_name && $last_name && $class) {
         $stmt = $pdo->prepare('UPDATE students SET first_name = ?, last_name = ?, email = ?, phone = ?, class = ? WHERE id = ?');
         $stmt->execute([$first_name, $last_name, $email, $phone, $class, $id]);
-        $message = 'Student updated successfully.';
-        $student['first_name'] = $first_name;
-        $student['last_name'] = $last_name;
-        $student['email'] = $email;
-        $student['phone'] = $phone;
-        $student['class'] = $class;
+        header('Location: /students/list.php');
+        exit;
     } else {
         $error = 'Please fill in all required fields.';
     }
@@ -42,7 +37,6 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="form-wrapper">
     <h2>Edit Student: <?= htmlspecialchars($student['student_id']) ?></h2>
-    <?php if ($message): ?><div class="alert alert-success"><?= htmlspecialchars($message) ?></div><?php endif; ?>
     <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <form method="POST">
         <div class="form-group">
@@ -78,8 +72,10 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php endforeach; ?>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Update Student</button>
-        <a href="/students/list.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Student</button>
+            <a href="/students/list.php" class="btn" style="background:#e0e0e0;color:#555;">Cancel</a>
+        </div>
     </form>
 </div>
 

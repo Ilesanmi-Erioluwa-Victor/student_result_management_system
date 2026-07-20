@@ -9,7 +9,6 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-$message = '';
 $error = '';
 $levels = getLevels();
 
@@ -22,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare('INSERT INTO subjects (subject_code, subject_name, class) VALUES (?, ?, ?)');
             $stmt->execute([$subject_code, $subject_name, $class]);
-            $message = 'Subject added successfully.';
+            header('Location: /subjects/list.php');
+            exit;
         } catch (PDOException $e) {
             if ($e->getCode() == 23505) {
                 $error = 'Subject code already exists.';
@@ -40,7 +40,6 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="form-wrapper">
     <h2>Add New Subject</h2>
-    <?php if ($message): ?><div class="alert alert-success"><?= htmlspecialchars($message) ?></div><?php endif; ?>
     <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <form method="POST">
         <div class="form-row">
@@ -63,8 +62,10 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php endforeach; ?>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Save Subject</button>
-        <a href="/subjects/list.php" class="btn" style="background:#e0e0e0;margin-left:10px;">Cancel</a>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Subject</button>
+            <a href="/subjects/list.php" class="btn" style="background:#e0e0e0;color:#555;">Cancel</a>
+        </div>
     </form>
 </div>
 

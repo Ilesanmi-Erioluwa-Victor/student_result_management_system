@@ -86,9 +86,9 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
     <?php endif; ?>
 
-    <div class="text-center mt-20 no-print">
+    <div class="form-actions mt-20 no-print">
         <button id="print-btn" class="btn btn-info">Print Result</button>
-        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;">Back to Dashboard</a>
+        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;color:#555;">Back to Dashboard</a>
     </div>
 </div>
 
