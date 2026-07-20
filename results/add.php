@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($entries as $entry) {
             if (empty($entry['subject_code'])) continue;
             $subject_code = $entry['subject_code'];
-            $ca_score = $entry['ca_score'] ?? 0;
-            $exam_score = $entry['exam_score'] ?? 0;
+            $ca_score = (float) ($entry['ca_score'] ?? 0);
+            $exam_score = (float) ($entry['exam_score'] ?? 0);
             $total_score = $ca_score + $exam_score;
             $grade = computeGrade($total_score);
 
