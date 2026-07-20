@@ -20,14 +20,25 @@ if (!$student) {
     exit;
 }
 
-$stmt = $pdo->prepare('
-    SELECT r.*, sub.subject_name, sub.credit_unit
-    FROM results r
-    JOIN subjects sub ON r.subject_code = sub.subject_code
-    WHERE r.student_id = ? AND r.term = ? AND r.session = ?
-    ORDER BY sub.subject_name ASC
-');
-$stmt->execute([$student_id, $term, $session]);
+try {
+    $stmt = $pdo->prepare('
+        SELECT r.*, sub.subject_name, sub.credit_unit
+        FROM results r
+        JOIN subjects sub ON r.subject_code = sub.subject_code
+        WHERE r.student_id = ? AND r.term = ? AND r.session = ?
+        ORDER BY sub.subject_name ASC
+    ');
+    $stmt->execute([$student_id, $term, $session]);
+} catch (PDOException $e) {
+    $stmt = $pdo->prepare('
+        SELECT r.*, sub.subject_name
+        FROM results r
+        JOIN subjects sub ON r.subject_code = sub.subject_code
+        WHERE r.student_id = ? AND r.term = ? AND r.session = ?
+        ORDER BY sub.subject_name ASC
+    ');
+    $stmt->execute([$student_id, $term, $session]);
+}
 $results = $stmt->fetchAll();
 
 $totalUnits = 0;
@@ -42,13 +53,23 @@ foreach ($results as $r) {
 }
 $gpa = $totalUnits > 0 ? round($totalGradePoints / $totalUnits, 2) : 0;
 
-$stmt = $pdo->prepare('
-    SELECT r.*, sub.credit_unit
-    FROM results r
-    JOIN subjects sub ON r.subject_code = sub.subject_code
-    WHERE r.student_id = ?
-');
-$stmt->execute([$student_id]);
+try {
+    $stmt = $pdo->prepare('
+        SELECT r.*, sub.credit_unit
+        FROM results r
+        JOIN subjects sub ON r.subject_code = sub.subject_code
+        WHERE r.student_id = ?
+    ');
+    $stmt->execute([$student_id]);
+} catch (PDOException $e) {
+    $stmt = $pdo->prepare('
+        SELECT r.*
+        FROM results r
+        JOIN subjects sub ON r.subject_code = sub.subject_code
+        WHERE r.student_id = ?
+    ');
+    $stmt->execute([$student_id]);
+}
 $allResults = $stmt->fetchAll();
 $cgTotalUnits = 0;
 $cgTotalGradePoints = 0;

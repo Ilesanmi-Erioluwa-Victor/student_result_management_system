@@ -29,6 +29,29 @@ $semesters = $stmt->fetchAll();
 $institutionName = getSetting('institution_name');
 $scale = getInstitutionType() === 'polytechnic' ? '4.00' : '5.00';
 
+function fetchResults($pdo, $student_id, $term, $session) {
+    try {
+        $stmt = $pdo->prepare('
+            SELECT r.*, sub.subject_name, sub.credit_unit
+            FROM results r
+            JOIN subjects sub ON r.subject_code = sub.subject_code
+            WHERE r.student_id = ? AND r.term = ? AND r.session = ?
+            ORDER BY sub.subject_name ASC
+        ');
+        $stmt->execute([$student_id, $term, $session]);
+    } catch (PDOException $e) {
+        $stmt = $pdo->prepare('
+            SELECT r.*, sub.subject_name
+            FROM results r
+            JOIN subjects sub ON r.subject_code = sub.subject_code
+            WHERE r.student_id = ? AND r.term = ? AND r.session = ?
+            ORDER BY sub.subject_name ASC
+        ');
+        $stmt->execute([$student_id, $term, $session]);
+    }
+    return $stmt->fetchAll();
+}
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -49,15 +72,7 @@ require_once __DIR__ . '/../includes/header.php';
 
     <?php foreach ($semesters as $sem): ?>
     <?php
-    $stmt = $pdo->prepare('
-        SELECT r.*, sub.subject_name, sub.credit_unit
-        FROM results r
-        JOIN subjects sub ON r.subject_code = sub.subject_code
-        WHERE r.student_id = ? AND r.term = ? AND r.session = ?
-        ORDER BY sub.subject_name ASC
-    ');
-    $stmt->execute([$student_id, $sem['term'], $sem['session']]);
-    $results = $stmt->fetchAll();
+    $results = fetchResults($pdo, $student_id, $sem['term'], $sem['session']);
 
     $totalUnits = 0;
     $totalGradePoints = 0;
