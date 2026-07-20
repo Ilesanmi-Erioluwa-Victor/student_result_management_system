@@ -14,10 +14,11 @@ require_once __DIR__ . '/../includes/header.php';
     <table>
         <thead>
             <tr>
-                <th>Subject Code</th>
+                <th>Code</th>
                 <th>Subject Name</th>
                 <th>Level</th>
                 <th>Semester</th>
+                <th>CU</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -28,13 +29,14 @@ require_once __DIR__ . '/../includes/header.php';
                 <td><?= htmlspecialchars($subject['subject_name']) ?></td>
                 <td><?= htmlspecialchars($subject['class']) ?></td>
                 <td><?= htmlspecialchars($subject['semester']) ?></td>
+                <td><?= (int) $subject['credit_unit'] ?></td>
                 <td class="actions">
                     <a href="/subjects/add.php?delete=<?= $subject['id'] ?>" class="btn btn-danger btn-sm delete-confirm">Delete</a>
                 </td>
             </tr>
             <?php endforeach; ?>
             <?php if (empty($subjects)): ?>
-            <tr><td colspan="5" style="text-align:center;color:#888;">No subjects added yet.</td></tr>
+            <tr><td colspan="6" style="text-align:center;color:#888;">No subjects added yet.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

@@ -33,6 +33,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <td><?= htmlspecialchars($student['phone'] ?: '-') ?></td>
                 <td><?= htmlspecialchars($student['class']) ?></td>
                 <td class="actions">
+                    <a href="/results/student.php?student_id=<?= urlencode($student['student_id']) ?>" class="btn btn-info btn-sm">Results</a>
                     <a href="/students/edit.php?id=<?= $student['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
                     <a href="/students/delete.php?id=<?= $student['id'] ?>" class="btn btn-danger btn-sm delete-confirm">Delete</a>
                 </td>

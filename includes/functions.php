@@ -35,3 +35,25 @@ function getGradeMeaning($grade) {
     ];
     return $meanings[$type][$grade] ?? $grade;
 }
+
+function getGradePoint($grade) {
+    $type = getInstitutionType();
+    if ($type === 'polytechnic') {
+        $points = ['A' => 4, 'B' => 3, 'C' => 2, 'F' => 0];
+    } else {
+        $points = ['A' => 5, 'B' => 4, 'C' => 3, 'D' => 2, 'E' => 1, 'F' => 0];
+    }
+    return $points[$grade] ?? 0;
+}
+
+function calculateGPA($results) {
+    $totalPoints = 0;
+    $totalUnits = 0;
+    foreach ($results as $r) {
+        $unit = (int) ($r['credit_unit'] ?? 3);
+        $gp = getGradePoint($r['grade']);
+        $totalPoints += $gp * $unit;
+        $totalUnits += $unit;
+    }
+    return $totalUnits > 0 ? round($totalPoints / $totalUnits, 2) : 0;
+}

@@ -26,13 +26,17 @@ CREATE TABLE IF NOT EXISTS subjects (
     subject_code VARCHAR(20) UNIQUE NOT NULL,
     subject_name VARCHAR(100) NOT NULL,
     class VARCHAR(50) NOT NULL,
-    semester VARCHAR(20) NOT NULL DEFAULT 'First Semester'
+    semester VARCHAR(20) NOT NULL DEFAULT 'First Semester',
+    credit_unit INT NOT NULL DEFAULT 3
 );
 
 -- Add semester column to existing subjects table if missing
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='subjects' AND column_name='semester') THEN
         ALTER TABLE subjects ADD COLUMN semester VARCHAR(20) NOT NULL DEFAULT 'First Semester';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='subjects' AND column_name='credit_unit') THEN
+        ALTER TABLE subjects ADD COLUMN credit_unit INT NOT NULL DEFAULT 3;
     END IF;
 END $$;
 

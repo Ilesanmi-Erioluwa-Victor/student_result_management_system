@@ -17,11 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $subject_name = trim($_POST['subject_name']);
     $class = trim($_POST['class']);
     $semester = trim($_POST['semester']);
+    $credit_unit = (int) ($_POST['credit_unit'] ?? 3);
 
-    if ($subject_code && $subject_name && $class && $semester) {
+    if ($subject_code && $subject_name && $class && $semester && $credit_unit > 0) {
         try {
-            $stmt = $pdo->prepare('INSERT INTO subjects (subject_code, subject_name, class, semester) VALUES (?, ?, ?, ?)');
-            $stmt->execute([$subject_code, $subject_name, $class, $semester]);
+            $stmt = $pdo->prepare('INSERT INTO subjects (subject_code, subject_name, class, semester, credit_unit) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$subject_code, $subject_name, $class, $semester, $credit_unit]);
             header('Location: /subjects/list.php');
             exit;
         } catch (PDOException $e) {
@@ -72,6 +73,10 @@ require_once __DIR__ . '/../includes/header.php';
                     <option value="Second Semester">Second Semester</option>
                 </select>
             </div>
+        </div>
+        <div class="form-group">
+            <label>Credit Unit *</label>
+            <input type="number" name="credit_unit" value="3" min="1" max="6" required>
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Subject</button>

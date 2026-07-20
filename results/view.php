@@ -21,7 +21,7 @@ if (!$student) {
 }
 
 $stmt = $pdo->prepare('
-    SELECT r.*, sub.subject_name
+    SELECT r.*, sub.subject_name, sub.credit_unit
     FROM results r
     JOIN subjects sub ON r.subject_code = sub.subject_code
     WHERE r.student_id = ? AND r.term = ? AND r.session = ?
@@ -30,13 +30,36 @@ $stmt = $pdo->prepare('
 $stmt->execute([$student_id, $term, $session]);
 $results = $stmt->fetchAll();
 
-$totalObtained = 0;
-$totalPossible = 0;
+$totalUnits = 0;
+$totalGradePoints = 0;
+$totalScore = 0;
 foreach ($results as $r) {
-    $totalObtained += $r['total_score'];
-    $totalPossible += 100;
+    $unit = (int) ($r['credit_unit'] ?? 3);
+    $gp = getGradePoint($r['grade']);
+    $totalUnits += $unit;
+    $totalGradePoints += $gp * $unit;
+    $totalScore += $r['total_score'];
 }
-$average = count($results) > 0 ? round($totalObtained / count($results), 2) : 0;
+$gpa = $totalUnits > 0 ? round($totalGradePoints / $totalUnits, 2) : 0;
+
+$stmt = $pdo->prepare('
+    SELECT r.*, sub.credit_unit
+    FROM results r
+    JOIN subjects sub ON r.subject_code = sub.subject_code
+    WHERE r.student_id = ?
+');
+$stmt->execute([$student_id]);
+$allResults = $stmt->fetchAll();
+$cgTotalUnits = 0;
+$cgTotalGradePoints = 0;
+foreach ($allResults as $r) {
+    $unit = (int) ($r['credit_unit'] ?? 3);
+    $gp = getGradePoint($r['grade']);
+    $cgTotalUnits += $unit;
+    $cgTotalGradePoints += $gp * $unit;
+}
+$cgpa = $cgTotalUnits > 0 ? round($cgTotalGradePoints / $cgTotalUnits, 2) : 0;
+
 $institutionName = getSetting('institution_name');
 
 require_once __DIR__ . '/../includes/header.php';
@@ -53,15 +76,20 @@ require_once __DIR__ . '/../includes/header.php';
             <tr>
                 <th>S/N</th>
                 <th>Subject</th>
-                <th>CA Score</th>
-                <th>Exam Score</th>
+                <th>CA</th>
+                <th>Exam</th>
                 <th>Total</th>
                 <th>Grade</th>
+                <th>CU</th>
+                <th>GP</th>
                 <th>Remark</th>
             </tr>
         </thead>
         <tbody>
-            <?php $sn = 1; foreach ($results as $r): ?>
+            <?php $sn = 1; foreach ($results as $r):
+                $unit = (int) ($r['credit_unit'] ?? 3);
+                $gp = getGradePoint($r['grade']);
+            ?>
             <tr>
                 <td><?= $sn++ ?></td>
                 <td style="text-align:left;"><?= htmlspecialchars($r['subject_name']) ?></td>
@@ -69,26 +97,37 @@ require_once __DIR__ . '/../includes/header.php';
                 <td><?= $r['exam_score'] ?></td>
                 <td><strong><?= $r['total_score'] ?></strong></td>
                 <td><strong><?= htmlspecialchars($r['grade']) ?></strong></td>
+                <td><?= $unit ?></td>
+                <td><?= number_format($gp, 1) ?></td>
                 <td><?= htmlspecialchars(getGradeMeaning($r['grade'])) ?></td>
             </tr>
             <?php endforeach; ?>
             <?php if (empty($results)): ?>
-            <tr><td colspan="7" style="color:#888;">No results found for this selection.</td></tr>
+            <tr><td colspan="9" style="color:#888;">No results found for this selection.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
 
     <?php if (!empty($results)): ?>
     <div class="result-summary">
-        <p><strong>Total Score:</strong> <?= $totalObtained ?> / <?= $totalPossible ?></p>
-        <p><strong>Average:</strong> <?= $average ?>%</p>
-        <p><strong>Level:</strong> <?= htmlspecialchars($student['class']) ?></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+                <p><strong>Total Score:</strong> <?= $totalScore ?> / <?= count($results) * 100 ?></p>
+                <p><strong>Average:</strong> <?= count($results) > 0 ? round($totalScore / count($results), 2) : 0 ?>%</p>
+            </div>
+            <div>
+                <p><strong>Total Credit Units:</strong> <?= $totalUnits ?></p>
+                <p><strong>GPA:</strong> <?= number_format($gpa, 2) ?> / <?= getInstitutionType() === 'polytechnic' ? '4.00' : '5.00' ?></p>
+                <p><strong>CGPA:</strong> <?= number_format($cgpa, 2) ?> / <?= getInstitutionType() === 'polytechnic' ? '4.00' : '5.00' ?></p>
+            </div>
+        </div>
     </div>
     <?php endif; ?>
 
     <div class="form-actions mt-20 no-print">
         <button id="print-btn" class="btn btn-info">Print Result</button>
-        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;color:#555;">Back to Dashboard</a>
+        <a href="/results/student.php?student_id=<?= urlencode($student_id) ?>" class="btn btn-success">View All Results</a>
+        <a href="/dashboard.php" class="btn" style="background:#e0e0e0;color:#555;">Back</a>
     </div>
 </div>
 
