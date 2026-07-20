@@ -11,14 +11,22 @@
 <?php if (isLoggedIn()): ?>
 <div class="header">
     <div class="header-inner">
-        <h1><a href="dashboard.php">SRMS</a></h1>
+        <h1><a href="<?= $_SESSION['role'] === 'student' ? '/student/dashboard.php' : 'dashboard.php' ?>">SRMS</a></h1>
         <div class="nav">
             <span class="username">Welcome, <?= htmlspecialchars($_SESSION['full_name']) ?></span>
-            <a href="/dashboard.php">Dashboard</a>
-            <a href="/students/list.php">Students</a>
-            <a href="/subjects/list.php">Subjects</a>
-            <a href="/results/add.php">Enter Results</a>
-            <a href="/settings.php">Settings</a>
+            <?php if ($_SESSION['role'] === 'student'): ?>
+                <a href="/student/dashboard.php">Dashboard</a>
+                <a href="/student/courses.php">My Courses</a>
+                <a href="/student/results.php">My Results</a>
+            <?php else: ?>
+                <a href="/dashboard.php">Dashboard</a>
+                <a href="/students/list.php">Students</a>
+                <a href="/subjects/list.php">Subjects</a>
+                <a href="/faculties/list.php">Faculties</a>
+                <a href="/departments/list.php">Departments</a>
+                <a href="/results/add.php">Enter Results</a>
+                <a href="/settings.php">Settings</a>
+            <?php endif; ?>
             <a href="/logout.php" style="color:#f56565;">Logout</a>
         </div>
     </div>

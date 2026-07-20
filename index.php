@@ -2,14 +2,18 @@
 require_once 'config/database.php';
 
 if (isLoggedIn()) {
-    header('Location: dashboard.php');
+    if ($_SESSION['role'] === 'student') {
+        header('Location: student/dashboard.php');
+    } else {
+        header('Location: dashboard.php');
+    }
     exit;
 }
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'] ?? '';
+    $username = trim($_POST['username']);
     $password = $_POST['password'] ?? '';
 
     if ($username && $password) {
@@ -22,7 +26,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['full_name'] = $user['full_name'];
             $_SESSION['role'] = $user['role'];
-            header('Location: dashboard.php');
+            if ($user['student_id']) {
+                $_SESSION['student_id'] = $user['student_id'];
+            }
+
+            if ($user['role'] === 'student') {
+                header('Location: student/dashboard.php');
+            } else {
+                header('Location: dashboard.php');
+            }
             exit;
         } else {
             $error = 'Invalid username or password.';
@@ -60,6 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <button type="submit" class="btn btn-primary">Sign In</button>
             </form>
+            <p style="text-align:center;margin-top:20px;font-size:13px;">
+                Student? <a href="register.php">Create an account</a>
+            </p>
         </div>
     </div>
     <script src="/js/script.js"></script>

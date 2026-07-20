@@ -2,37 +2,54 @@
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
+if ($_SESSION['role'] === 'student') {
+    header('Location: /student/dashboard.php');
+    exit;
+}
+
 $studentCount = $pdo->query('SELECT COUNT(*) FROM students')->fetchColumn();
 $subjectCount = $pdo->query('SELECT COUNT(*) FROM subjects')->fetchColumn();
 $resultCount = $pdo->query('SELECT COUNT(*) FROM results')->fetchColumn();
+$facultyCount = $pdo->query('SELECT COUNT(*) FROM faculties')->fetchColumn();
+$departmentCount = $pdo->query('SELECT COUNT(*) FROM departments')->fetchColumn();
 $institutionType = getInstitutionType();
 $institutionName = getSetting('institution_name');
 
 require_once 'includes/header.php';
 ?>
 
-<h2 style="margin-top: 30px;"><?= htmlspecialchars($institutionName) ?> - Dashboard</h2>
+<h2 style="margin-top:30px;"><?= htmlspecialchars($institutionName) ?> - Admin Dashboard</h2>
 <p style="color:#888;margin-bottom:10px;">Institution Type: <?= ucfirst($institutionType) ?></p>
 
 <div class="dashboard-stats">
     <div class="stat-card">
         <h3><?= $studentCount ?></h3>
-        <p>Total Students</p>
-        <a href="/students/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">View Students</a>
+        <p>Students</p>
+        <a href="/students/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">Manage</a>
     </div>
     <div class="stat-card">
         <h3><?= $subjectCount ?></h3>
-        <p>Total Subjects</p>
-        <a href="/subjects/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">View Subjects</a>
+        <p>Subjects</p>
+        <a href="/subjects/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">Manage</a>
     </div>
     <div class="stat-card">
         <h3><?= $resultCount ?></h3>
         <p>Results Entered</p>
-        <a href="/results/add.php" class="btn btn-info btn-sm" style="margin-top:10px;">Enter Results</a>
+        <a href="/results/add.php" class="btn btn-info btn-sm" style="margin-top:10px;">Enter</a>
+    </div>
+    <div class="stat-card">
+        <h3><?= $facultyCount ?></h3>
+        <p>Faculties</p>
+        <a href="/faculties/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">Manage</a>
+    </div>
+    <div class="stat-card">
+        <h3><?= $departmentCount ?></h3>
+        <p>Departments</p>
+        <a href="/departments/list.php" class="btn btn-info btn-sm" style="margin-top:10px;">Manage</a>
     </div>
 </div>
 
-<div class="table-container" style="margin-top: 30px;">
+<div class="table-container" style="margin-top:30px;">
     <div class="table-header">
         <h2>Recent Results</h2>
         <a href="/results/add.php" class="btn btn-success btn-sm">+ Add Result</a>
@@ -72,7 +89,7 @@ require_once 'includes/header.php';
             </tr>
             <?php endwhile; ?>
             <?php if ($stmt->rowCount() === 0): ?>
-            <tr><td colspan="7" style="text-align:center;color:#888;">No results found. Start by <a href="/results/add.php">entering results</a>.</td></tr>
+            <tr><td colspan="7" style="text-align:center;color:#888;">No results found. <a href="/results/add.php">Enter results</a>.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

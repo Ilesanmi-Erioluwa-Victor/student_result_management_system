@@ -11,6 +11,7 @@ if (isset($_GET['delete'])) {
 
 $error = '';
 $levels = getLevels();
+$departments = $pdo->query('SELECT d.*, f.name AS faculty_name FROM departments d JOIN faculties f ON d.faculty_id = f.id ORDER BY f.name, d.name')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $subject_code = strtoupper(trim($_POST['subject_code']));
@@ -18,11 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $class = trim($_POST['class']);
     $semester = trim($_POST['semester']);
     $credit_unit = (int) ($_POST['credit_unit'] ?? 3);
+    $department_id = $_POST['department_id'] ?: null;
 
     if ($subject_code && $subject_name && $class && $semester && $credit_unit > 0) {
         try {
-            $stmt = $pdo->prepare('INSERT INTO subjects (subject_code, subject_name, class, semester, credit_unit) VALUES (?, ?, ?, ?, ?)');
-            $stmt->execute([$subject_code, $subject_name, $class, $semester, $credit_unit]);
+            $stmt = $pdo->prepare('INSERT INTO subjects (subject_code, subject_name, class, semester, credit_unit, department_id) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$subject_code, $subject_name, $class, $semester, $credit_unit, $department_id]);
             header('Location: /subjects/list.php');
             exit;
         } catch (PDOException $e) {
@@ -74,9 +76,20 @@ require_once __DIR__ . '/../includes/header.php';
                 </select>
             </div>
         </div>
-        <div class="form-group">
-            <label>Credit Unit *</label>
-            <input type="number" name="credit_unit" value="3" min="1" max="6" required>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Credit Unit *</label>
+                <input type="number" name="credit_unit" value="3" min="1" max="6" required>
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select name="department_id">
+                    <option value="">All Departments</option>
+                    <?php foreach ($departments as $d): ?>
+                    <option value="<?= $d['id'] ?>"><?= htmlspecialchars($d['name'] . ' (' . $d['faculty_name'] . ')') ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Subject</button>

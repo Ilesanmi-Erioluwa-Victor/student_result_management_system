@@ -1,7 +1,12 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 
-$students = $pdo->query('SELECT * FROM students ORDER BY student_id ASC')->fetchAll();
+$students = $pdo->query('
+    SELECT s.*, d.name AS department_name
+    FROM students s
+    LEFT JOIN departments d ON s.department_id = d.id
+    ORDER BY s.student_id ASC
+')->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -18,8 +23,8 @@ require_once __DIR__ . '/../includes/header.php';
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Email</th>
-                <th>Phone</th>
                 <th>Level</th>
+                <th>Department</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -30,8 +35,8 @@ require_once __DIR__ . '/../includes/header.php';
                 <td><?= htmlspecialchars($student['first_name']) ?></td>
                 <td><?= htmlspecialchars($student['last_name']) ?></td>
                 <td><?= htmlspecialchars($student['email'] ?: '-') ?></td>
-                <td><?= htmlspecialchars($student['phone'] ?: '-') ?></td>
                 <td><?= htmlspecialchars($student['class']) ?></td>
+                <td><?= htmlspecialchars($student['department_name'] ?? '-') ?></td>
                 <td class="actions">
                     <a href="/results/student.php?student_id=<?= urlencode($student['student_id']) ?>" class="btn btn-info btn-sm">Results</a>
                     <a href="/students/edit.php?id=<?= $student['id'] ?>" class="btn btn-warning btn-sm">Edit</a>

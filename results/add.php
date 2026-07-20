@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/functions.php';
 
 $error = '';
 
-$students = $pdo->query('SELECT * FROM students ORDER BY last_name ASC')->fetchAll();
+$students = $pdo->query('SELECT s.*, d.name AS department_name FROM students s LEFT JOIN departments d ON s.department_id = d.id ORDER BY s.last_name ASC')->fetchAll();
 $allSubjects = $pdo->query('SELECT * FROM subjects ORDER BY subject_name ASC')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -63,7 +63,8 @@ require_once __DIR__ . '/../includes/header.php';
                     <option value="">Select Student</option>
                     <?php foreach ($students as $s): ?>
                     <option value="<?= htmlspecialchars($s['student_id']) ?>"
-                            data-level="<?= htmlspecialchars($s['class']) ?>">
+                            data-level="<?= htmlspecialchars($s['class']) ?>"
+                            data-department="<?= htmlspecialchars($s['department_id'] ?? '') ?>">
                         <?= htmlspecialchars($s['student_id'] . ' - ' . $s['last_name'] . ', ' . $s['first_name']) ?>
                     </option>
                     <?php endforeach; ?>
@@ -114,6 +115,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <tr class="subject-row"
                         data-level="<?= htmlspecialchars($subj['class']) ?>"
                         data-semester="<?= htmlspecialchars($subj['semester']) ?>"
+                        data-department="<?= htmlspecialchars($subj['department_id'] ?? '') ?>"
                         style="display:none;">
                         <td>
                             <?= htmlspecialchars($subj['subject_name']) ?>
@@ -148,15 +150,18 @@ function filterSubjects() {
     const semester = document.getElementById('semesterSelect').value;
     const selectedOption = studentSelect.options[studentSelect.selectedIndex];
     const level = selectedOption ? selectedOption.getAttribute('data-level') : '';
+    const dept = selectedOption ? selectedOption.getAttribute('data-department') : '';
     let visibleCount = 0;
 
     subjectRows.forEach(function (row) {
         const rowLevel = row.getAttribute('data-level');
         const rowSemester = row.getAttribute('data-semester');
+        const rowDept = row.getAttribute('data-department');
         const levelMatch = rowLevel === 'All' || rowLevel === level;
         const semesterMatch = rowSemester === semester;
+        const deptMatch = !rowDept || !dept || rowDept === dept;
 
-        if (level && semester && levelMatch && semesterMatch) {
+        if (level && semester && levelMatch && semesterMatch && deptMatch) {
             row.style.display = '';
             visibleCount++;
         } else {

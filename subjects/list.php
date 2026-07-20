@@ -1,7 +1,12 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 
-$subjects = $pdo->query('SELECT * FROM subjects ORDER BY semester, subject_code ASC')->fetchAll();
+$subjects = $pdo->query('
+    SELECT sub.*, d.name AS department_name
+    FROM subjects sub
+    LEFT JOIN departments d ON sub.department_id = d.id
+    ORDER BY sub.semester, sub.subject_code ASC
+')->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -19,6 +24,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <th>Level</th>
                 <th>Semester</th>
                 <th>CU</th>
+                <th>Department</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -30,13 +36,14 @@ require_once __DIR__ . '/../includes/header.php';
                 <td><?= htmlspecialchars($subject['class']) ?></td>
                 <td><?= htmlspecialchars($subject['semester']) ?></td>
                 <td><?= (int) $subject['credit_unit'] ?></td>
+                <td><?= htmlspecialchars($subject['department_name'] ?? 'All') ?></td>
                 <td class="actions">
                     <a href="/subjects/add.php?delete=<?= $subject['id'] ?>" class="btn btn-danger btn-sm delete-confirm">Delete</a>
                 </td>
             </tr>
             <?php endforeach; ?>
             <?php if (empty($subjects)): ?>
-            <tr><td colspan="6" style="text-align:center;color:#888;">No subjects added yet.</td></tr>
+            <tr><td colspan="7" style="text-align:center;color:#888;">No subjects added yet.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

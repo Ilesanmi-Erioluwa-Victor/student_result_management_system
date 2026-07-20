@@ -2,9 +2,9 @@
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-$message = '';
 $error = '';
 $levels = getLevels();
+$departments = $pdo->query('SELECT d.*, f.name AS faculty_name FROM departments d JOIN faculties f ON d.faculty_id = f.id ORDER BY f.name, d.name')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = trim($_POST['student_id']);
@@ -13,11 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
     $class = trim($_POST['class']);
+    $department_id = $_POST['department_id'] ?: null;
 
     if ($student_id && $first_name && $last_name && $class) {
         try {
-            $stmt = $pdo->prepare('INSERT INTO students (student_id, first_name, last_name, email, phone, class) VALUES (?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$student_id, $first_name, $last_name, $email, $phone, $class]);
+            $stmt = $pdo->prepare('INSERT INTO students (student_id, first_name, last_name, email, phone, class, department_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$student_id, $first_name, $last_name, $email, $phone, $class, $department_id]);
             header('Location: /students/list.php');
             exit;
         } catch (PDOException $e) {
@@ -63,14 +64,25 @@ require_once __DIR__ . '/../includes/header.php';
                 <input type="text" name="phone">
             </div>
         </div>
-        <div class="form-group">
-            <label>Level *</label>
-            <select name="class" required>
-                <option value="">Select Level</option>
-                <?php foreach ($levels as $level): ?>
-                <option value="<?= $level ?>"><?= $level ?></option>
-                <?php endforeach; ?>
-            </select>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Level *</label>
+                <select name="class" required>
+                    <option value="">Select Level</option>
+                    <?php foreach ($levels as $level): ?>
+                    <option value="<?= $level ?>"><?= $level ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select name="department_id">
+                    <option value="">Select Department</option>
+                    <?php foreach ($departments as $d): ?>
+                    <option value="<?= $d['id'] ?>"><?= htmlspecialchars($d['name'] . ' (' . $d['faculty_name'] . ')') ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Student</button>
