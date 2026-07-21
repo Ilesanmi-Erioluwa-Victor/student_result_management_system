@@ -51,6 +51,14 @@ function getDepartmentLevels($pdo, $department_id) {
     return $levels ?: $defaultLevels;
 }
 
+function getNextLevel($currentLevel, $levels) {
+    $idx = array_search($currentLevel, $levels);
+    if ($idx !== false && isset($levels[$idx + 1])) {
+        return $levels[$idx + 1];
+    }
+    return null;
+}
+
 function getGradePoint($grade) {
     $type = getInstitutionType();
     if ($type === 'polytechnic') {
