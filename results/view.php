@@ -25,7 +25,10 @@ try {
         SELECT r.*, sub.subject_name, sub.credit_unit
         FROM results r
         JOIN subjects sub ON r.subject_code = sub.subject_code
+        JOIN students s ON r.student_id = s.student_id
         WHERE r.student_id = ? AND r.term = ? AND r.session = ?
+        AND (sub.class = s.class OR sub.class = \'All\')
+        AND (sub.department_id IS NULL OR sub.department_id = s.department_id)
         ORDER BY sub.subject_name ASC
     ');
     $stmt->execute([$student_id, $term, $session]);
@@ -34,7 +37,10 @@ try {
         SELECT r.*, sub.subject_name
         FROM results r
         JOIN subjects sub ON r.subject_code = sub.subject_code
+        JOIN students s ON r.student_id = s.student_id
         WHERE r.student_id = ? AND r.term = ? AND r.session = ?
+        AND (sub.class = s.class OR sub.class = \'All\')
+        AND (sub.department_id IS NULL OR sub.department_id = s.department_id)
         ORDER BY sub.subject_name ASC
     ');
     $stmt->execute([$student_id, $term, $session]);
@@ -58,7 +64,10 @@ try {
         SELECT r.*, sub.credit_unit
         FROM results r
         JOIN subjects sub ON r.subject_code = sub.subject_code
+        JOIN students s ON r.student_id = s.student_id
         WHERE r.student_id = ?
+        AND (sub.class = s.class OR sub.class = \'All\')
+        AND (sub.department_id IS NULL OR sub.department_id = s.department_id)
     ');
     $stmt->execute([$student_id]);
 } catch (PDOException $e) {
@@ -66,7 +75,10 @@ try {
         SELECT r.*
         FROM results r
         JOIN subjects sub ON r.subject_code = sub.subject_code
+        JOIN students s ON r.student_id = s.student_id
         WHERE r.student_id = ?
+        AND (sub.class = s.class OR sub.class = \'All\')
+        AND (sub.department_id IS NULL OR sub.department_id = s.department_id)
     ');
     $stmt->execute([$student_id]);
 }

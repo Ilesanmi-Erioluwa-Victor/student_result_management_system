@@ -73,6 +73,8 @@ require_once 'includes/header.php';
                 FROM results r
                 JOIN students s ON r.student_id = s.student_id
                 JOIN subjects sub ON r.subject_code = sub.subject_code
+                WHERE (sub.class = s.class OR sub.class = \'All\')
+                AND (sub.department_id IS NULL OR sub.department_id = s.department_id)
                 ORDER BY r.created_at DESC
                 LIMIT 10
             ');
