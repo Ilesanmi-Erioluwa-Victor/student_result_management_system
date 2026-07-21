@@ -34,24 +34,22 @@ $levels = getDepartmentLevels($pdo, $student['department_id']);
 $nextLevel = getNextLevel($student['class'], $levels);
 
 $upgraded = false;
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upgrade_level'])) {
-    $next = $_POST['upgrade_level'];
-    $stmt = $pdo->prepare('SELECT class FROM students WHERE student_id = ?');
-    $stmt->execute([$student_id]);
-    $currentClass = $stmt->fetchColumn();
-    $expectedNext = getNextLevel($currentClass, $levels);
-    if ($next === $expectedNext) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_level'])) {
+    $newLevel = $_POST['update_level'];
+    if (in_array($newLevel, $levels)) {
         $stmt = $pdo->prepare('UPDATE students SET class = ? WHERE student_id = ?');
-        $stmt->execute([$next, $student_id]);
-        $student['class'] = $next;
+        $stmt->execute([$newLevel, $student_id]);
+        $student['class'] = $newLevel;
         $levels = getDepartmentLevels($pdo, $student['department_id']);
-        $nextLevel = getNextLevel($next, $levels);
+        $nextLevel = getNextLevel($newLevel, $levels);
         $upgraded = true;
         $_SESSION['upgrade_dismissed'] = time();
     }
 }
 
-$showUpgradeModal = $nextLevel && !$upgraded && (!isset($_SESSION['upgrade_dismissed']) || $_SESSION['upgrade_dismissed'] < time() - 86400);
+$hasLevelOptions = count($levels) > 0;
+
+$showUpgradeModal = $hasLevelOptions && !$upgraded && (!isset($_SESSION['upgrade_dismissed']) || $_SESSION['upgrade_dismissed'] < time() - 86400);
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -87,30 +85,34 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="dashboard-stats" style="margin-top:20px;">
     <div class="stat-card" style="background:#ebf8ff;border:1px solid #bee3f8;">
         <h3 style="color:#2b6cb0;">Current Level: <?= htmlspecialchars($student['class']) ?></h3>
-        <?php if ($nextLevel): ?>
         <p style="margin-top:5px;font-size:13px;color:#4a5568;">
-            Next: <strong><?= htmlspecialchars($nextLevel) ?></strong>
-            &middot; <a href="#" onclick="document.getElementById('levelModal').style.display='flex';return false;" style="color:#2b6cb0;">Advance Now</a>
+            <?php if ($nextLevel): ?>
+            Next: <strong><?= htmlspecialchars($nextLevel) ?></strong> &middot;
+            <?php endif; ?>
+            <a href="#" onclick="document.getElementById('levelModal').style.display='flex';return false;" style="color:#2b6cb0;">Update Level</a>
         </p>
-        <?php else: ?>
-        <p style="margin-top:5px;font-size:13px;color:#4a5568;">This is the highest level available.</p>
-        <?php endif; ?>
     </div>
 </div>
 
-<?php if ($nextLevel): ?>
+<?php if ($hasLevelOptions): ?>
 <div id="levelModal" class="modal-overlay"<?= $showUpgradeModal ? '' : ' style="display:none;"' ?>>
     <div class="modal-box">
-        <h2>Level Upgrade Available</h2>
-        <p>Your current level is <strong><?= htmlspecialchars($student['class']) ?></strong>.</p>
-        <p>Would you like to advance to <strong><?= htmlspecialchars($nextLevel) ?></strong>?</p>
-        <p style="font-size:13px;color:#888;margin-top:10px;">
-            Your course registrations and results from previous levels will be preserved.
+        <h2>Update Your Level Now</h2>
+        <p style="margin-bottom:15px;">Select your current level from the options below.</p>
+        <p style="font-size:13px;color:#888;margin-bottom:15px;">
+            Course registrations and results from previous levels will be preserved.
         </p>
-        <form method="POST" style="display:inline-block;margin-top:15px;">
-            <input type="hidden" name="upgrade_level" value="<?= htmlspecialchars($nextLevel) ?>">
-            <button type="submit" class="btn btn-primary">Upgrade to <?= htmlspecialchars($nextLevel) ?></button>
-            <button type="button" class="btn" style="background:#e0e0e0;color:#555;margin-left:8px;" onclick="closeModal()">Maybe Later</button>
+        <form method="POST" style="margin-top:10px;">
+            <?php foreach ($levels as $level): ?>
+            <label class="level-option<?= $level === $student['class'] ? ' selected' : '' ?>">
+                <input type="radio" name="update_level" value="<?= htmlspecialchars($level) ?>" <?= $level === $student['class'] ? 'checked' : '' ?>>
+                <?= htmlspecialchars($level) ?>
+            </label>
+            <?php endforeach; ?>
+            <div style="margin-top:15px;display:flex;gap:8px;justify-content:center;">
+                <button type="submit" class="btn" style="background:#667eea;color:#fff;">Update Level</button>
+                <button type="button" class="btn" style="background:#e0e0e0;color:#555;" onclick="closeModal()">Maybe Later</button>
+            </div>
         </form>
     </div>
 </div>
@@ -143,6 +145,31 @@ require_once __DIR__ . '/../includes/header.php';
     margin: 6px 0;
     font-size: 15px;
     color: #4a5568;
+}
+.level-option {
+    display: block;
+    padding: 10px 15px;
+    margin: 6px 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #4a5568;
+    text-align: left;
+    transition: all .15s;
+}
+.level-option:hover {
+    background: #f7fafc;
+    border-color: #667eea;
+}
+.level-option.selected {
+    background: #ebf4ff;
+    border-color: #667eea;
+    color: #2b6cb0;
+    font-weight: 600;
+}
+.level-option input[type="radio"] {
+    margin-right: 10px;
 }
 </style>
 
