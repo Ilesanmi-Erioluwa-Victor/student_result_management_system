@@ -36,6 +36,21 @@ function getGradeMeaning($grade) {
     return $meanings[$type][$grade] ?? $grade;
 }
 
+function getDepartmentLevels($pdo, $department_id) {
+    $institution_type = getInstitutionType();
+    $defaultLevels = $institution_type === 'polytechnic'
+        ? ['ND1', 'ND2', 'HND1', 'HND2']
+        : ['100L', '200L', '300L', '400L', '500L'];
+
+    if (!$department_id) return $defaultLevels;
+
+    $stmt = $pdo->prepare('SELECT level FROM department_levels WHERE department_id = ? ORDER BY id');
+    $stmt->execute([$department_id]);
+    $levels = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    return $levels ?: $defaultLevels;
+}
+
 function getGradePoint($grade) {
     $type = getInstitutionType();
     if ($type === 'polytechnic') {

@@ -70,6 +70,13 @@ CREATE TABLE IF NOT EXISTS course_registrations (
     UNIQUE(student_id, subject_code, term, session)
 );
 
+CREATE TABLE IF NOT EXISTS department_levels (
+    id SERIAL PRIMARY KEY,
+    department_id INT REFERENCES departments(id) ON DELETE CASCADE,
+    level VARCHAR(50) NOT NULL,
+    UNIQUE(department_id, level)
+);
+
 CREATE TABLE IF NOT EXISTS settings (
     key VARCHAR(50) PRIMARY KEY,
     value VARCHAR(255) NOT NULL
@@ -102,5 +109,22 @@ DO $$ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='student_id') THEN
         ALTER TABLE users ADD COLUMN student_id VARCHAR(20);
+    END IF;
+END $$;
+
+-- Seed department_levels with default levels for each department
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM department_levels LIMIT 1) THEN
+        INSERT INTO department_levels (department_id, level)
+        SELECT d.id, l.level
+        FROM departments d
+        CROSS JOIN (
+            SELECT unnest(
+                CASE WHEN (SELECT value FROM settings WHERE key = 'institution_type') = 'polytechnic'
+                THEN ARRAY['ND1','ND2','HND1','HND2']
+                ELSE ARRAY['100L','200L','300L','400L','500L']
+                END
+            ) AS level
+        ) l;
     END IF;
 END $$;

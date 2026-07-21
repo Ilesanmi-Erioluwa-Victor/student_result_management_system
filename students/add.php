@@ -3,8 +3,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 $error = '';
-$levels = getLevels();
-$departments = $pdo->query('SELECT d.*, f.name AS faculty_name FROM departments d JOIN faculties f ON d.faculty_id = f.id ORDER BY f.name, d.name')->fetchAll();
+$faculties = $pdo->query('SELECT id, name FROM faculties ORDER BY name')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = trim($_POST['student_id']);
@@ -15,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $class = trim($_POST['class']);
     $department_id = $_POST['department_id'] ?: null;
 
-    if ($student_id && $first_name && $last_name && $class) {
+    if ($student_id && $first_name && $last_name && $class && $department_id) {
         try {
             $stmt = $pdo->prepare('INSERT INTO students (student_id, first_name, last_name, email, phone, class, department_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([$student_id, $first_name, $last_name, $email, $phone, $class, $department_id]);
@@ -64,23 +63,26 @@ require_once __DIR__ . '/../includes/header.php';
                 <input type="text" name="phone">
             </div>
         </div>
+        <div class="form-group">
+            <label>Faculty *</label>
+            <select name="faculty_id" id="facultySelect" required onchange="loadDepts(this.value)">
+                <option value="">Select Faculty</option>
+                <?php foreach ($faculties as $f): ?>
+                <option value="<?= $f['id'] ?>"><?= htmlspecialchars($f['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
         <div class="form-row">
             <div class="form-group">
-                <label>Level *</label>
-                <select name="class" required>
-                    <option value="">Select Level</option>
-                    <?php foreach ($levels as $level): ?>
-                    <option value="<?= $level ?>"><?= $level ?></option>
-                    <?php endforeach; ?>
+                <label>Department *</label>
+                <select name="department_id" id="departmentSelect" required onchange="loadLvls(this.value)">
+                    <option value="">Select Faculty First</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Department</label>
-                <select name="department_id">
-                    <option value="">Select Department</option>
-                    <?php foreach ($departments as $d): ?>
-                    <option value="<?= $d['id'] ?>"><?= htmlspecialchars($d['name'] . ' (' . $d['faculty_name'] . ')') ?></option>
-                    <?php endforeach; ?>
+                <label>Level *</label>
+                <select name="class" id="levelSelect" required>
+                    <option value="">Select Department First</option>
                 </select>
             </div>
         </div>
@@ -90,5 +92,47 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </form>
 </div>
+
+<script>
+function loadDepts(facultyId) {
+    var deptSelect = document.getElementById('departmentSelect');
+    var levelSelect = document.getElementById('levelSelect');
+    deptSelect.innerHTML = '<option value="">Loading...</option>';
+    levelSelect.innerHTML = '<option value="">Select Department First</option>';
+    if (!facultyId) {
+        deptSelect.innerHTML = '<option value="">Select Faculty First</option>';
+        return;
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/departments_by_faculty.php?faculty_id=' + facultyId, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            deptSelect.innerHTML = '<option value="">Select Department</option>' + xhr.responseText;
+        } else {
+            deptSelect.innerHTML = '<option value="">Error loading departments</option>';
+        }
+    };
+    xhr.send();
+}
+
+function loadLvls(departmentId) {
+    var levelSelect = document.getElementById('levelSelect');
+    levelSelect.innerHTML = '<option value="">Loading...</option>';
+    if (!departmentId) {
+        levelSelect.innerHTML = '<option value="">Select Department First</option>';
+        return;
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/department_levels.php?department_id=' + departmentId, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            levelSelect.innerHTML = '<option value="">Select Level</option>' + xhr.responseText;
+        } else {
+            levelSelect.innerHTML = '<option value="">Error loading levels</option>';
+        }
+    };
+    xhr.send();
+}
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
