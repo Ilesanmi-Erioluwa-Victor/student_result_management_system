@@ -10,20 +10,26 @@ if ($faculty_id) {
     $faculty = $stmt->fetch();
 }
 
-$departments = $pdo->prepare('
-    SELECT d.*, f.name AS faculty_name,
-        (SELECT COUNT(*) FROM students WHERE department_id = d.id) AS student_count
-    FROM departments d
-    JOIN faculties f ON d.faculty_id = f.id
-    WHERE ($faculty_id IS NULL OR d.faculty_id = ?)
-    ORDER BY f.name, d.name
-');
 if ($faculty_id) {
-    $departments->execute([$faculty_id]);
+    $stmt = $pdo->prepare('
+        SELECT d.*, f.name AS faculty_name,
+            (SELECT COUNT(*) FROM students WHERE department_id = d.id) AS student_count
+        FROM departments d
+        JOIN faculties f ON d.faculty_id = f.id
+        WHERE d.faculty_id = ?
+        ORDER BY f.name, d.name
+    ');
+    $stmt->execute([$faculty_id]);
 } else {
-    $departments->execute([null]);
+    $stmt = $pdo->query('
+        SELECT d.*, f.name AS faculty_name,
+            (SELECT COUNT(*) FROM students WHERE department_id = d.id) AS student_count
+        FROM departments d
+        JOIN faculties f ON d.faculty_id = f.id
+        ORDER BY f.name, d.name
+    ');
 }
-$departments = $departments->fetchAll();
+$departments = $stmt->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
